@@ -2,110 +2,267 @@
 toc: false
 ---
 
-<div class="hero">
-  <h1>Titanic-viz</h1>
-  <h2>Welcome to your new app! Edit&nbsp;<code style="font-size: 90%;">src/index.md</code> to change this page.</h2>
-  <a href="https://observablehq.com/framework/getting-started">Get started<span style="display: inline-block; margin-left: 0.25rem;">↗︎</span></a>
-</div>
+# Titanic Survival Explorer
 
-<div class="grid grid-cols-2" style="grid-auto-rows: 504px;">
-  <div class="card">${
-    resize((width) => Plot.plot({
-      title: "Your awesomeness over time 🚀",
-      subtitle: "Up and to the right!",
-      width,
-      y: {grid: true, label: "Awesomeness"},
-      marks: [
-        Plot.ruleY([0]),
-        Plot.lineY(aapl, {x: "Date", y: "Close", tip: true})
-      ]
-    }))
-  }</div>
-  <div class="card">${
-    resize((width) => Plot.plot({
-      title: "How big are penguins, anyway? 🐧",
-      width,
-      grid: true,
-      x: {label: "Body mass (g)"},
-      y: {label: "Flipper length (mm)"},
-      color: {legend: true},
-      marks: [
-        Plot.linearRegressionY(penguins, {x: "body_mass_g", y: "flipper_length_mm", stroke: "species"}),
-        Plot.dot(penguins, {x: "body_mass_g", y: "flipper_length_mm", stroke: "species", tip: true})
-      ]
-    }))
-  }</div>
-</div>
+CSC 477 Assignment 5
 
----
+**Question:** How did passenger age, fare, sex, and class relate to survival on the Titanic?
 
-## Next steps
-
-Here are some ideas of things you could try…
-
-<div class="grid grid-cols-4">
-  <div class="card">
-    Chart your own data using <a href="https://observablehq.com/framework/lib/plot"><code>Plot</code></a> and <a href="https://observablehq.com/framework/files"><code>FileAttachment</code></a>. Make it responsive using <a href="https://observablehq.com/framework/javascript#resize(render)"><code>resize</code></a>.
-  </div>
-  <div class="card">
-    Create a <a href="https://observablehq.com/framework/project-structure">new page</a> by adding a Markdown file (<code>whatever.md</code>) to the <code>src</code> folder.
-  </div>
-  <div class="card">
-    Add a drop-down menu using <a href="https://observablehq.com/framework/inputs/select"><code>Inputs.select</code></a> and use it to filter the data shown in a chart.
-  </div>
-  <div class="card">
-    Write a <a href="https://observablehq.com/framework/loaders">data loader</a> that queries a local database or API, generating a data snapshot on build.
-  </div>
-  <div class="card">
-    Import a <a href="https://observablehq.com/framework/imports">recommended library</a> from npm, such as <a href="https://observablehq.com/framework/lib/leaflet">Leaflet</a>, <a href="https://observablehq.com/framework/lib/dot">GraphViz</a>, <a href="https://observablehq.com/framework/lib/tex">TeX</a>, or <a href="https://observablehq.com/framework/lib/duckdb">DuckDB</a>.
-  </div>
-  <div class="card">
-    Ask for help, or share your work or ideas, on our <a href="https://github.com/observablehq/framework/discussions">GitHub discussions</a>.
-  </div>
-  <div class="card">
-    Visit <a href="https://github.com/observablehq/framework">Framework on GitHub</a> and give us a star. Or file an issue if you’ve found a bug!
-  </div>
+<div class="ocean">
+  <div class="ship">🚢</div>
 </div>
 
 <style>
-
-.hero {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-family: var(--sans-serif);
-  margin: 4rem 0 8rem;
-  text-wrap: balance;
-  text-align: center;
+.ocean {
+  width: 100%;
+  height: 120px;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 3px solid #4da6ff;
+  margin-bottom: 2rem;
 }
 
-.hero h1 {
-  margin: 1rem 0;
-  padding: 1rem 0;
-  max-width: none;
-  font-size: 14vw;
-  font-weight: 900;
-  line-height: 1;
-  background: linear-gradient(30deg, var(--theme-foreground-focus), currentColor);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.ship {
+  position: absolute;
+  font-size: 64px;
+  animation: sail 12s linear infinite;
 }
 
-.hero h2 {
-  margin: 0;
-  max-width: 34em;
-  font-size: 20px;
-  font-style: initial;
-  font-weight: 500;
-  line-height: 1.5;
-  color: var(--theme-foreground-muted);
+@keyframes sail {
+  from { left: -100px; }
+  to { left: 100%; }
 }
-
-@media (min-width: 640px) {
-  .hero h1 {
-    font-size: 90px;
-  }
-}
-
 </style>
+
+```js
+const titanic = await FileAttachment("data/Titanic-Dataset.csv").csv({typed: true});
+```
+
+```js
+const titanicClean = titanic.filter(
+  d => d.Age != null && d.Fare != null
+);
+```
+
+```js
+const selectedSex = view(
+  Inputs.select(
+    ["all", "male", "female"],
+    {label: "Filter by sex"}
+  )
+);
+```
+
+```js
+const selectedClass = view(
+  Inputs.select(
+    ["all", 1, 2, 3],
+    {
+      label: "Filter by Passenger Class",
+      value: "all"
+    }
+  )
+);
+```
+
+```js
+const numericOptions = ["Age", "Fare", "Pclass", "SibSp", "Parch"];
+```
+
+```js
+const xVariable = view(
+  Inputs.select(numericOptions, {
+    label: "X-axis",
+    value: "Age"
+  })
+);
+```
+
+```js
+const yVariable = view(
+  Inputs.select(numericOptions, {
+    label: "Y-axis",
+    value: "Fare"
+  })
+);
+```
+
+```js
+const colorBy = view(
+  Inputs.select(
+    ["Survived", "Sex", "Pclass"],
+    {
+      label: "Color By",
+      value: "Survived"
+    }
+  )
+);
+```
+
+```js
+const filteredTitanic = titanicClean.filter(d => {
+  const sexMatch =
+    selectedSex === "all" || d.Sex === selectedSex;
+
+  const classMatch =
+    selectedClass === "all" || d.Pclass === selectedClass;
+
+  return sexMatch && classMatch;
+});
+```
+
+```js
+const passengerCount = filteredTitanic.length;
+const survivedCount = filteredTitanic.filter(d => d.Survived === 1).length;
+const diedCount = passengerCount - survivedCount;
+const survivalRate = passengerCount > 0 ? (survivedCount / passengerCount) * 100 : 0;
+const avgAge = d3.mean(filteredTitanic, d => d.Age);
+const avgFare = d3.mean(filteredTitanic, d => d.Fare);
+```
+
+## Current Selection Dashboard
+
+<div class="grid grid-cols-4">
+  <div class="card">
+    <h2>${passengerCount}</h2>
+    <p>Passengers shown</p>
+  </div>
+
+  <div class="card">
+    <h2>${survivedCount}</h2>
+    <p>Survived</p>
+  </div>
+
+  <div class="card">
+    <h2>${diedCount}</h2>
+    <p>Did not survive</p>
+  </div>
+
+  <div class="card">
+    <h2>${survivalRate.toFixed(1)}%</h2>
+    <p>Survival rate</p>
+  </div>
+</div>
+
+<div class="grid grid-cols-2">
+  <div class="card">
+    <h2>${avgAge.toFixed(1)}</h2>
+    <p>Average age</p>
+  </div>
+
+  <div class="card">
+    <h2>£${avgFare.toFixed(2)}</h2>
+    <p>Average fare</p>
+  </div>
+</div>
+
+```js
+const analysisText =
+  survivalRate > 50
+    ? "More than half of the currently displayed passengers survived."
+    : "Less than half of the currently displayed passengers survived.";
+```
+
+**Analysis:** ${analysisText}
+
+## Interactive Passenger Comparison
+
+Choose variables for the X and Y axes, filter by sex and passenger class, and change how passengers are colored.
+
+```js
+vl.markCircle({size: 80, opacity: 0.75})
+  .data(filteredTitanic)
+  .params(
+    vl.selectInterval().bind("scales")
+  )
+  .encode(
+    vl.x()
+      .fieldQ(xVariable)
+      .title(xVariable),
+
+    vl.y()
+      .fieldQ(yVariable)
+      .title(yVariable),
+
+    colorBy === "Survived"
+      ? vl.color()
+          .fieldN("Survived")
+          .scale({
+            domain: [0, 1],
+            range: ["red", "green"]
+          })
+          .title("Survival Status")
+      : vl.color()
+          .fieldN(colorBy)
+          .title(colorBy),
+
+    vl.tooltip([
+      "Name",
+      "Sex",
+      "Age",
+      "Fare",
+      "Pclass",
+      "SibSp",
+      "Parch",
+      "Survived"
+    ])
+  )
+  .width(800)
+  .height(500)
+  .render()
+```
+
+## Survival Rate by Passenger Class
+
+This bar chart updates with the same filters as the scatterplot.
+
+```js
+const classSummary = d3.rollups(
+  filteredTitanic,
+  v => ({
+    passengers: v.length,
+    survivalRate: d3.mean(v, d => d.Survived) * 100
+  }),
+  d => d.Pclass
+).map(([Pclass, values]) => ({
+  Pclass: `Class ${Pclass}`,
+  passengers: values.passengers,
+  survivalRate: values.survivalRate
+}));
+```
+
+```js
+vl.markBar()
+  .data(classSummary)
+  .encode(
+    vl.x().fieldN("Pclass").title("Passenger Class"),
+    vl.y().fieldQ("survivalRate").title("Survival Rate (%)"),
+    vl.tooltip(["Pclass", "passengers", "survivalRate"])
+  )
+  .width(700)
+  .height(350)
+  .render()
+```
+
+Loaded ${titanic.length} passengers.
+
+# Design Rationale
+
+First of all, I thought that the topic itself would be kind of interesting. I like the movie about the titanic (until it starts sinking) and I thought I could get some good interactions out of it. I wanted to start off with a little boat going across the screen just for something fun. I remember one of the visualizations we looked at had blocks moving across the screen depending on the forces acting on it so I wanted to have something moving across to get a similar aesthetic. I also wanted to do an adjustable scatter plot to make the plot itself more interactive and interesting. You can zoom in and out of the chart and also switch the x and y axis values. The colors correspond to either survived, sex, or passenger class, an you can also filter by sex or passenger class. In order to help guide the user, I added a dashboard that gives some statistics of what is currently selected. I think that this helps give the user more understanding with what is going on and more confidence when exploring the chart. Finally I wanted to make a bar chart below to highlight survival rate. This is the main message I am trying to get across throughout this visualization so I think it is an important inclusion. I also wanted to make sure that when you change the color by, the colors change to clearly indicate that something new is being shown.
+
+
+# References
+
+Dataset Source:
+
+Titanic Dataset by M Yasser H
+
+https://www.kaggle.com/datasets/yasserh/titanic-dataset
+
+Visualization Inspiration:
+
+CSC 477 course materials, lectures, and in-class examples.
+
+AI Assistance:
+
+OpenAI ChatGPT (GPT-5.5) was used to assist with debugging Observable Framework code, resolving implementation errors, and troubleshooting visualization display issues. All design decisions, interaction choices, and written rationale were created fully by the author.
