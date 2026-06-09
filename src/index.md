@@ -493,3 +493,11 @@ CSC 477 course materials, lectures, and in-class examples.
 AI Assistance:
 
 OpenAI ChatGPT was used to assist with debugging Observable Framework code, resolving implementation errors, and troubleshooting visualization display issues. All design decisions, interaction choices, and written rationale were created fully by the author.
+
+## Project Repository
+
+GitHub Repository:
+
+<a href="https://github.com/jillian-Bogosian/A5--titanic-viz" target="_blank">
+View Source Code
+</a>
