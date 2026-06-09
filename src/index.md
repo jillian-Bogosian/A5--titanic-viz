@@ -475,6 +475,8 @@ In order to help guide the user, I added a dashboard that gives summary statisti
 
 Finally, I wanted to include a second chart that focuses on survival rates by passenger class. Survival is the main message I am trying to highlight throughout the visualization, so I thought it was important to include a separate view that makes those comparisons easy to see. The two charts work together so that users can explore individual passengers in the scatterplot while also seeing broader trends in the survival rate chart. I also chose colors that clearly distinguish categories while remaining accessible to a wider range of users.
 
+I considered using only a single chart, but I decided that pairing the scatterplot with a survival-rate chart would make it easier to see both individual passengers and overall trends. I also considered using separate charts for different passenger groups, but I felt that filters would give users more flexibility while keeping the interface simpler.
+
 Overall, my goal was to create an interactive visualization that is both informative and enjoyable to explore, while helping users better understand how factors such as age, fare, sex, and passenger class related to survival on the Titanic.
 
 
